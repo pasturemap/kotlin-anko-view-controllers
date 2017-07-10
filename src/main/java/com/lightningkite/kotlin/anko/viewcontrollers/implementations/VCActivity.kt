@@ -37,10 +37,22 @@ abstract class VCActivity : Activity() {
         setContentView(vcView!!)
     }
 
+    val onStart = HashSet<() -> Unit>()
+    override fun onStart() {
+        super.onStart()
+        onStart.runAll()
+    }
+
     val onResume = HashSet<() -> Unit>()
     override fun onResume() {
         super.onResume()
         onResume.runAll()
+    }
+
+    val onStop = HashSet<() -> Unit>()
+    override fun onStop() {
+        super.onStop()
+        onStop.runAll()
     }
 
     val onPause = HashSet<() -> Unit>()
