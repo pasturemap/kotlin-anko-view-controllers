@@ -257,6 +257,13 @@ fun Activity.confirmationDialog(title: String? = null, message: String, onCancel
     return standardDialog(title, message, listOf(StandardDialog.okButton(resources, action = onConfirm), StandardDialog.cancelButton(resources, action = onCancel)))
 }
 
+fun Activity.confirmationDialog(title: String? = null, message: String, dismissOnClickOutside: Boolean = true, onCancel: () -> Unit = {}, onConfirm: () -> Unit) {
+    return standardDialog(title,
+            message,
+            listOf(StandardDialog.okButton(resources, action = onConfirm), StandardDialog.cancelButton(resources, action = onCancel)),
+            dismissOnClickOutside = dismissOnClickOutside)
+}
+
 fun Activity.confirmationDialog(title: String? = null, message: String, okResource: Int = R.string.ok, cancelResource: Int = R.string.cancel, dismissOnClickOutside: Boolean = true, onPositiveAction: () -> Unit, onNegativeAction: () -> Unit) {
     return standardDialog(
             title,
