@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.support.v4.content.FileProvider
@@ -93,7 +94,12 @@ fun VCActivity.getImageUriFromGallery(onResult: (Uri?) -> Unit) {
     val getIntent = Intent(Intent.ACTION_GET_CONTENT)
     getIntent.type = "image/*"
 
-    val pickIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+    var pickIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+
+    if (Build.VERSION.SDK_INT >= 19) {
+        pickIntent = Intent(Intent.ACTION_OPEN_DOCUMENT, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+    }
+
     pickIntent.type = "image/*"
 
     val chooserIntent = Intent.createChooser(getIntent, "Select Image")
