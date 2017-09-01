@@ -20,6 +20,8 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
+
+
 /**
  * Opens a dialog requesting an image from either the camera or the gallery.
  */
@@ -38,7 +40,11 @@ fun VCActivity.dialogPublicImageUri(fileProviderAuthority: String, publicFolderN
                 requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)) {
                     getImageUriFromGallery {
                         Log.i("ImageUploadLayout", it.toString())
-                        onResult(it)
+                        if (it != null) {
+                            onResult(getScaledImageUriFromGallery(it, 1600, 1200))
+                        } else {
+                            onResult(it)
+                        }
                     }
                 }
             }
@@ -107,8 +113,7 @@ fun VCActivity.getImageUriFromGallery(onResult: (Uri?) -> Unit) {
             onResult(null); return@startIntent
         }
         if (data == null) return@startIntent
-        val imageUri = getScaledImageUri(data.data, 1600, 1200)
-        onResult(imageUri)
+        onResult(data.data)
     }
 }
 //
@@ -157,7 +162,7 @@ fun VCActivity.getImageUriFromCamera(fileProviderAuthority: String, onResult: (U
         val file = File.createTempFile(timeStamp, ".jpg", folder)
         val potentialFile: Uri = FileProvider.getUriForFile(this, fileProviderAuthority, file)
 
-        getImageUriFromCamera(potentialFile, fileProviderAuthority, onResult)
+        getImageUriFromCamera(potentialFile, onResult)
     } catch(e: Exception) {
         e.printStackTrace()
         onResult(null)
@@ -179,7 +184,7 @@ fun VCActivity.getPublicImageUriFromCamera(fileProviderAuthority: String, public
 
         val potentialFile = FileProvider.getUriForFile(this, fileProviderAuthority, file)
 
-        getImageUriFromCamera(potentialFile, fileProviderAuthority, onResult)
+        getImageUriFromCamera(potentialFile, onResult)
     } catch(e: Exception) {
         e.printStackTrace()
         onResult(null)
@@ -189,7 +194,7 @@ fun VCActivity.getPublicImageUriFromCamera(fileProviderAuthority: String, public
 /**
  * Opens the camera to take a picture, returning it in [onResult].
  */
-fun VCActivity.getImageUriFromCamera(requestedUri: Uri, fileProviderAuthority: String, onResult: (Uri?) -> Unit) {
+fun VCActivity.getImageUriFromCamera(requestedUri: Uri, onResult: (Uri?) -> Unit) {
     try {
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         intent.putExtra(MediaStore.EXTRA_OUTPUT, requestedUri)
@@ -198,10 +203,7 @@ fun VCActivity.getImageUriFromCamera(requestedUri: Uri, fileProviderAuthority: S
                 onResult(null); return@startIntent
             }
             println("Actual data:" + data?.data?.toString())
-            //val fixedUri = Uri.fromFile(File((data?.data ?: potentialFile).getRealPath(this)))
-//            val fixedUri = File((data?.data ?: potentialFile).getRealPath(this)).toImageContentUri(this)
-
-            val imageUri = getScaledImageUri(data?.data ?: requestedUri, 1600, 1200)
+            val imageUri = getScaledImageUriFromCamera(data?.data ?: requestedUri, 1600, 1200)
             onResult(imageUri)
         }
     } catch(e: Exception) {
@@ -259,21 +261,31 @@ fun VCActivity.getImageFromCamera(fileProviderAuthority: String, minBytes: Long,
     }
 }
 
-fun VCActivity.getScaledImageUri(uri: Uri, maxWidth: Int, maxHeight: Int): Uri {
+fun VCActivity.getScaledImageUriFromGallery(uri: Uri, maxWidth: Int, maxHeight: Int): Uri {
     val bitmap = getBitmapFromUri(uri, maxWidth, maxHeight)
 
     val publicPictures = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
     val folder = publicPictures.child("PastureMap")
     val timeStamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(Date())
-    val tempFile = File.createTempFile(timeStamp, "compressed.png", folder)
+    val tempFile = File.createTempFile("PastureMap_$timeStamp", ".jpg", folder)
 
     val stream = ByteArrayOutputStream()
-    bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+    bitmap?.compress(Bitmap.CompressFormat.JPEG, 100, stream)
     val byteArray = stream.toByteArray()
     val bs = ByteArrayInputStream(byteArray)
     bitmap?.recycle()
     stream.close()
+    tempFile.deleteOnExit()
 
     bs.writeToFile(tempFile)
     return Uri.fromFile(tempFile)
+}
+
+fun VCActivity.getScaledImageUriFromCamera(uri: Uri, maxWidth: Int, maxHeight: Int): Uri {
+    val bitmap = getBitmapFromUri(uri, maxWidth, maxHeight)
+    val timeStamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(Date())
+    val scaledUri = MediaStore.Images.Media.insertImage(contentResolver, bitmap, timeStamp , "PastureMap")
+    bitmap?.recycle()
+
+    return Uri.parse(scaledUri)
 }
