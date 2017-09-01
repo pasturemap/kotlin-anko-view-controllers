@@ -107,7 +107,7 @@ fun VCActivity.getImageUriFromGallery(onResult: (Uri?) -> Unit) {
             onResult(null); return@startIntent
         }
         if (data == null) return@startIntent
-        val imageUri = data.data
+        val imageUri = getScaledImageUri(data.data, 1600, 1200)
         onResult(imageUri)
     }
 }
@@ -201,8 +201,8 @@ fun VCActivity.getImageUriFromCamera(requestedUri: Uri, fileProviderAuthority: S
             //val fixedUri = Uri.fromFile(File((data?.data ?: potentialFile).getRealPath(this)))
 //            val fixedUri = File((data?.data ?: potentialFile).getRealPath(this)).toImageContentUri(this)
 
-            val destUri = getScaledImageUri(data?.data ?: requestedUri, 1600, 1200)
-            onResult(destUri)
+            val imageUri = getScaledImageUri(data?.data ?: requestedUri, 1600, 1200)
+            onResult(imageUri)
         }
     } catch(e: Exception) {
         e.printStackTrace()
