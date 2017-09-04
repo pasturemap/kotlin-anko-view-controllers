@@ -270,7 +270,7 @@ fun VCActivity.getScaledImageUriFromGallery(uri: Uri, maxWidth: Int, maxHeight: 
     val tempFile = File.createTempFile("PastureMap_$timeStamp", ".jpg", folder)
 
     val stream = ByteArrayOutputStream()
-    bitmap?.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+    bitmap?.compress(Bitmap.CompressFormat.JPEG, 50, stream)
     val byteArray = stream.toByteArray()
     val bs = ByteArrayInputStream(byteArray)
     bitmap?.recycle()
