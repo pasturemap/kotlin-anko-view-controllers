@@ -266,6 +266,8 @@ fun VCActivity.getScaledImageUriFromGallery(uri: Uri, maxWidth: Int, maxHeight: 
 
     val publicPictures = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
     val folder = publicPictures.child("PastureMap")
+    // Fix "NoSuchFileOrDirectory" crash
+    folder.mkdir()
     val timeStamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(Date())
     val tempFile = File.createTempFile("PastureMap_$timeStamp", ".jpg", folder)
 
