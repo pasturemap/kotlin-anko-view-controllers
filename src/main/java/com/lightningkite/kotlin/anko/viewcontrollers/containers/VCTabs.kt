@@ -3,7 +3,7 @@ package com.lightningkite.kotlin.anko.viewcontrollers.containers
 import com.lightningkite.kotlin.anko.animation.AnimationSet
 import com.lightningkite.kotlin.anko.viewcontrollers.ViewController
 import com.lightningkite.kotlin.runAll
-import java.util.*
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * Used to create left/right tabs.
@@ -16,7 +16,7 @@ class VCTabs(startIndex: Int, vcs: List<ViewController>) : VCContainerImpl() {
     constructor(startIndex: Int, vararg vcs: ViewController) : this(startIndex, vcs.toList())
 
     val viewControllers: Array<ViewController> = Array(vcs.size, { vcs[it] })
-    val onIndexChange = ArrayList<(Int) -> Unit>()
+    val onIndexChange = CopyOnWriteArrayList<(Int) -> Unit>()
     var index: Int = startIndex
         set(value) {
             if (value == field) return
