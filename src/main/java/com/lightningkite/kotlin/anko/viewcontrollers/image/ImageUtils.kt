@@ -262,25 +262,29 @@ fun VCActivity.getImageFromCamera(fileProviderAuthority: String, minBytes: Long,
 }
 
 fun VCActivity.getScaledImageUriFromGallery(uri: Uri, maxWidth: Int, maxHeight: Int): Uri {
-    val bitmap = getBitmapFromUri(uri, maxWidth, maxHeight)
+    try {
+        val bitmap = getBitmapFromUri(uri, maxWidth, maxHeight)
 
-    val publicPictures = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-    val folder = publicPictures.child("PastureMap")
-    // Fix "NoSuchFileOrDirectory" crash
-    folder.mkdir()
-    val timeStamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(Date())
-    val tempFile = File.createTempFile("PastureMap_$timeStamp", ".jpg", folder)
+        val publicPictures = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+        val folder = publicPictures.child("PastureMap")
+        // Fix "NoSuchFileOrDirectory" crash
+        folder.mkdir()
+        val timeStamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(Date())
+        val tempFile = File.createTempFile("PastureMap_$timeStamp", ".jpg", folder)
 
-    val stream = ByteArrayOutputStream()
-    bitmap?.compress(Bitmap.CompressFormat.JPEG, 50, stream)
-    val byteArray = stream.toByteArray()
-    val bs = ByteArrayInputStream(byteArray)
-    bitmap?.recycle()
-    stream.close()
-    tempFile.deleteOnExit()
+        val stream = ByteArrayOutputStream()
+        bitmap?.compress(Bitmap.CompressFormat.JPEG, 50, stream)
+        val byteArray = stream.toByteArray()
+        val bs = ByteArrayInputStream(byteArray)
+        bitmap?.recycle()
+        stream.close()
+        tempFile.deleteOnExit()
 
-    bs.writeToFile(tempFile)
-    return Uri.fromFile(tempFile)
+        bs.writeToFile(tempFile)
+        return Uri.fromFile(tempFile)
+    } catch (e: Exception) {
+        return Uri.EMPTY
+    }
 }
 
 fun VCActivity.getScaledImageUriFromCamera(uri: Uri, maxWidth: Int, maxHeight: Int): Uri {
