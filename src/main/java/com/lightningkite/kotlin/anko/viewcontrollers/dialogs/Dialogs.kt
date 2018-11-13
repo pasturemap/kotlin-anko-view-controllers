@@ -127,6 +127,61 @@ object CustomDialog {
 /**
  * Creates a psuedo-dialog that is actually an activity.  Significantly more stable and safe.
  */
+fun Context.standardDialog(
+        title: String?,
+        message: String?,
+        buttons: List<Pair<String, (VCStack) -> Unit>>,
+        dismissOnClickOutside: Boolean = true,
+        content: (ViewGroup.(VCStack) -> View)? = null
+) {
+    return dialog(dismissOnClickOutside, layoutParamModifier = { width = matchParent }) { ui, vcStack ->
+        ui.scrollView {
+            verticalLayout {
+                //title
+                textView(text = title) {
+                    styleTitle()
+                    if (title.isNullOrEmpty()) {
+                        visibility = View.GONE
+                    }
+                }.lparams(matchParent, wrapContent) {
+                    standardMargins(context)
+                    topMargin = dip(16)
+                }
+
+                //message
+                textView(text = message) {
+                    styleMessage()
+                    if (message.isNullOrEmpty()) {
+                        visibility = View.GONE
+                    }
+                }.lparams(matchParent, wrapContent) {
+                    standardMargins(context)
+                }
+
+                //custom content
+                content?.invoke(this, vcStack)?.lparams(matchParent, wrapContent) {
+                    standardMargins(context)
+                }
+
+                //buttons
+                linearLayout {
+                    gravity = Gravity.END
+                    for ((buttonName, action) in buttons) {
+                        button(buttonName) {
+                            styleNormal()
+                            onClick {
+                                action(vcStack)
+                            }
+                        }.lparams(wrapContent, wrapContent) {
+                            standardMargins(context)
+                        }
+                    }
+                }.lparams(matchParent, wrapContent)
+            }
+        }
+    }
+}
+
 fun Activity.standardDialog(
         title: String?,
         message: String?,
@@ -290,10 +345,14 @@ fun Activity.customConfirmationDialog(title: Int? = null, message: Int, okResour
 }
 
 fun Activity.infoDialog(title: Int? = null, message: Int, content: (ViewGroup.(VCStack) -> View)? = null, onConfirm: () -> Unit = {}) {
-    return standardDialog(title, message, listOf(StandardDialog.okButton(resources, action = onConfirm)), content = content)
+    return standardDialog(title, message, listOf(StandardDialog.okButton(resources, action = onConfirm)), content = content, dismissOnClickOutside = false)
 }
 
 fun Activity.infoDialog(title: String? = null, message: String, content: (ViewGroup.(VCStack) -> View)? = null, onConfirm: () -> Unit = {}) {
+    return standardDialog(title, message, listOf(StandardDialog.okButton(resources, action = onConfirm)), content = content)
+}
+
+fun Context.infoDialog(title: String? = null, message: String, content: (ViewGroup.(VCStack) -> View)? = null, onConfirm: () -> Unit = {}) {
     return standardDialog(title, message, listOf(StandardDialog.okButton(resources, action = onConfirm)), content = content)
 }
 
